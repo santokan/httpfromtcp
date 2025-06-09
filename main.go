@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 )
 
 const inputFile = "messages.txt"
@@ -17,11 +18,17 @@ func main() {
 	}
 	defer f.Close()
 
-	// read messages 8bits at a time and print them
+	fmt.Println("Reading messages from file:", inputFile)
+
+	var currentLine string
 	for {
 		b := make([]byte, 8, 8)
 		n, err := f.Read(b)
 		if err != nil {
+			if currentLine != "" {
+				fmt.Printf("read: %s\n", currentLine)
+				currentLine = ""
+			}
 			if errors.Is(err, io.EOF) {
 				break
 			}
@@ -29,6 +36,12 @@ func main() {
 			break
 		}
 		str := string(b[:n])
-		fmt.Printf("read: %s\n", str)
+		parts := strings.Split(str, "\n")
+		for i := range len(parts) - 1 {
+			currentLine += parts[i]
+			fmt.Printf("read: %s\n", currentLine)
+			currentLine = ""
+		}
+		currentLine += parts[len(parts)-1]
 	}
 }
